@@ -1,40 +1,43 @@
 from pathlib import Path
 import shutil
-from shutill import resolve_path, safe_copy, is_protected
 
-def cp_command(sourse, destinations, recursive=False):
-    try:
-        current_dir = Path.cwd()
-        source_path = resolve_path(sourse, current_dir)
-        dest_path = resolve_path(destinations, current_dir)
-        if not is_protected(source_path):
-            return f"The path '{source_path}' is protected"
-        if is_protected(dest_path) or is_protected(source_path):
-            return f"The path '{dest_path}' is protected"
-        if dest_path.exists() and dest_path.is_dir():
-            dest_path = dest_path / source_path.name
-        if source_path.is_file():
-            if safe_copy(source_path, dest_path):
-                return f"The file '{source_path}' is copied"
-            else:
-                return f"The file '{source_path}' is not copied"
-        elif source_path.is_dir():
-            if recursive:
-                shutil.copytree(source_path, dest_path)
-                return f"The dir '{source_path}' is copied"
-            else:
-                return f"The dir '{source_path}' is not copied"
+
+# копирование файлов и каталогов
+def cp(shell, args: list[str]):
+    if len(args) < 2:  # так как должно быть 2 аргумента: ТО, что копируем и КУЛА
+        raise ValueError('Must provide at least 2 arguments')
+
+    recursive = '-r' in args
+    sources = [arg for arg in args if arg != 'r']
+
+    destinations = Path(sources.pop())
+    sources = [Path(src) for src in sources]
+
+    if not sources:
+        raise ValueError('The source is not specified')
+
+    for source in sources:
+        if not source.is_absolute():
+            source = shell.current_dir / source
+        if not source.exists():
+            raise FileNotFoundError("Source does not exist")
+        if not destinations.is_absolute():
+            dest_path = shell.current_dir / destinations
         else:
-            return f"Unknown object type"
-    except Exception as e:
-        return str(e)
-    except PermissionError:
-        return f"Permission error"
-    except shutil.SameFileError:
-        return f"Same file error"
+            dest_path = destinations
 
+        try:
+            if source.is_file():
+                shutil.copy(source, dest_path)
+                print(f'Copied file {source} to {dest_path}')
+            elif source.is_dir():
+                if recursive:
+                    shutil.copy_tree(source, dest_path)
+                    print(f'Copied dir {source} to {dest_path}')
+                else:
+                    raise ValueError('please, use -r')
 
+        except Exception as e:
+            raise RuntimeError(e)
 
-
-
-
+    return True

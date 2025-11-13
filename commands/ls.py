@@ -1,42 +1,53 @@
 from pathlib import Path
-from shutill import resolve_path, format_file
+import os
+import stat
+from datetime import datetime
 
-#реализация команды ls - список файлов и каталогов
-def ls_command(args: list, current_dir: Path) -> str:
-    detailed = False
-    target_dir = current_dir
-    for arg in args:
-        if arg == "-1" or arg == "-l":
-            detailed = True
-        else:
-            target_dir = resolve_path(arg, current_dir)
 
-    if not target_dir.exists():
-        return f"The path '{target_dir}' does not exist"
-    if target_dir.is_file():
-        if detailed:
-            return format_file(target_dir)
-        else:
-            return target_dir.name
+# реализация команды ls - список файлов и каталогов
+def ls(shell, args):
+    options = [arg for arg in args if arg.startswith('-')]  # список аргументов
+    paths = [arg for arg in args if not arg.startswith('-')]  # пути к файлам, папкам
+    if paths:  # проверяем есть ли пути
+        target_path = Path(args[0])
+        if not target_path.is_absolute():
+            target_path = shell.current_dir / target_path  # преобр относительный в абсолютный
+    else:
+        target_path = shell.current_dir  # если путей нет, используем текущ директорию
+    if not target_path.exists():
+        raise FileNotFoundError(f'{target_path} does not exist')
+
+    detailed = "-l" in options
 
     try:
-        files = list(target_dir.iterdir())
-        if not files:
-            return f"The path '{target_dir}' is empty"
+        items = list(target_path.iterdir())  # возвращает все элементы директории
+    except PermissionError:  # если нет доступа к чтению
+        raise PermissionError(f'There is no access to the catalog: {target_path}')
 
-        files.sort()
+    items.sort(key=lambda item: (item.is_file(), item.name.lower()))
 
-        if detailed:
-            result=[]
-            for file in files:
-                result.append(format_file(file))
-            return result
-        else:
-            return [file.name for file in files]
+    if detailed:
+        print(f'\nContent of {target_path}:')
+        print()
+        for item in items:
+            try:
+                stat_info = item.stat()
+                mode = stat_info.st_mode
+                permission = ""
+                permission += 'd' if item.is_dir() else '-'
+                permission += 'r' if mode & stat.S_IREAD else '-'
+                permission += 'w' if mode & stat.S_IWRITE else '-'
+                permission += 'x' if mode & stat.S_IEXEC else '-'
 
-    except PermissionError:
-        return f"{target_dir} is not a directory"
-    except FileNotFoundError:
-        return f"{target_dir} does not exist"
+                size = stat_info.st_size if item.is_file() else 0
+                mtime = datetime.fromtimestamp(stat_info.st_mtime)
+                mtime = mtime.strftime('%Y-%m-%d %H:%M:%S')
 
+                print(f"{permission} {size} {mtime}{item.name}")
+            except PermissionError:
+                print(f'There is no access to the catalog: {item.name}')
+    else:
+        for item in items:
+            print(item.name)
 
+        return True

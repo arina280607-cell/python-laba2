@@ -1,29 +1,29 @@
 from pathlib import Path
-from shutill import resolve_path
 import os
 
 #команда cd - смена директории
-def cd_command(args: list, current_dir: Path) -> Path:
+def cd(shell, args: list[str]) -> bool:
     if not args:
         home_dir = Path.home()
-        os.chdir(home_dir)
-        return home_dir
-    target = args[0]
-
-    if target == "~":
-        home_dir = Path.home()
-        os.chdir(home_dir)
-        return home_dir
-    elif target == "..":
-        new_dir = current_dir.parent
-        os.chdir(new_dir)
-        return new_dir
     else:
-        target_path = resolve_path(target, current_dir)
-        if target_path.is_dir() and target_path.exists():
-            os.chdir(target_path)
-            return target_path
+        target = args[0]
+
+        if target == "~":
+            new_path = Path.home()
+        elif target == "..":
+            new_path = shell.current_dir.parent
         else:
-            print(f"cd: {target}: Not a directory")
-            return None
+            new_path = Path(target)
+            if not new_path.is_absolute():
+                new_path = shell.current_dir/new_path
+    if not new_path.exists():
+        raise FileNotFoundError(f"Directory {new_path} does not exist")
+    if not new_path.is_dir():
+        raise NotADirectoryError(f"{new_path} not a directory")
+    os.chdir(new_path)
+    shell.current_dir = Path.cwd()
+
+    print(f"Current working directory: {shell.current_dir}")
+    return True
+
 

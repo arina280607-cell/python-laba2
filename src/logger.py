@@ -1,21 +1,22 @@
 import logging
-import datetime
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+
 def logg():
-    lod_file=Path("shell.log")
-    logging.basicConfig(
-        level=logging.INFO,
-        format='[%(asctime)s]%(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        handlers=[
-            logging.FileHandler(lod_file),
-            logging.StreamHandler()
-        ]
-    )
-    return logging.getLogger('shell.log')
+    log_file = Path("shell.log")
+    logger = logging.getLogger("shell")
+    logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    file_handler = RotatingFileHandler(str(log_file), maxBytes=1000000, backupCount=10, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
 def log_command(logger, command, success=True, error_message=""):
     if success:
-        logger.info(command)
+        logger.info(f"command: {command}")
     else:
-        logger.error(command)
+        logger.error(f"in command{command} error {error_message}")

@@ -1,30 +1,25 @@
 from pathlib import Path
-from shutill import resolve_path
-
-def cat_command(args: list, current_dir: Path) -> Path:
+#выводим водержимое файла в консоль
+def cat(shell, args:list[str]) -> bool:
     if not args:
-        print("cat: missing file")
-        return False
-    file_path = resolve_path(args[0], current_dir)
+        raise ValueError('File not specified')
 
-    if not(file_path.exists()):
-        print("cat: {file_path}: No file in directory")
-        return False
+    file_path = Path(args[0])
+    if not file_path.is_absolute():
+        file_path=shell.current_dir/file_path
+
+    if not file_path.exists():
+        raise ValueError('File not found')
     if file_path.is_dir():
-        print("cat: {file_path}: Is a directory")
-        return False
+        raise IsADirectoryError("It is not a file, a directory")
 
     try:
-        with file_path.open("r") as file:
-            inform=file.read()
-            print(inform)
-            return True
-            return inform
-    except PermissionError:
-        print("cat: {file_path}: permission error")
+        with open(file_path, 'r') as file:
+            content = file.read()
+            print(content)
     except UnicodeDecodeError:
-        print("cat: {file_path}: can't read file")
-    except Exception as e:
-        print("cat: {file_path}: {e}")
+        print(f'The file {file_path} is not a text file')
+
+    return True
 
 
