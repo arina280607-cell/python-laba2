@@ -8,10 +8,14 @@ def logg():
     logger = logging.getLogger("shell")
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    if logger.handlers:
+        logger.handlers.clear()
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt=' %Y-%m-%d %H:%M:%S')
     file_handler = RotatingFileHandler(str(log_file), maxBytes=1000000, backupCount=10, encoding="utf-8")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
     return logger
 
 def log_command(logger, command, success=True, error_message=""):

@@ -15,6 +15,8 @@ def ls(shell, args):
         target_path = shell.current_dir  # если путей нет, используем текущ директорию
     if not target_path.exists():
         raise FileNotFoundError(f'{target_path} does not exist')
+    if not target_path.is_dir():
+        raise NotADirectoryError(f'{target_path} is not a directory')
 
     detailed = "-l" in options
 
@@ -27,22 +29,21 @@ def ls(shell, args):
 
     if detailed:
         print(f'Content of {target_path}:')
-        print()
+        print('-'*50)
         for item in items:
             try:
                 stat_info = item.stat()
                 mode = stat_info.st_mode
-                permission = ""
-                permission += 'd' if item.is_dir() else '-'
+                permission = 'd' if item.is_dir() else '-'
                 permission += 'r' if mode & stat.S_IREAD else '-'
                 permission += 'w' if mode & stat.S_IWRITE else '-'
                 permission += 'x' if mode & stat.S_IEXEC else '-'
 
-                size = stat_info.st_size if item.is_file() else 0
+                size = stat_info.st_size
                 mtime = datetime.fromtimestamp(stat_info.st_mtime)
-                mtime = mtime.strftime('%Y-%m-%d %H:%M:%S')
+                mtime_str = mtime.strftime('%Y-%m-%d %H:%M:%S')
 
-                print(f"{permission} {size} {mtime}{item.name}")
+                print(f"{permission} {size:8d} {mtime_str} {item.name}")
             except PermissionError:
                 print(f'There is no access to the catalog: {item.name}')
     else:
