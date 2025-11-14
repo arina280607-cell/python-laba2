@@ -29,7 +29,7 @@ def rm(shell, args):
 
             response = input(f'Remove {target_path}? [Y/N] ')
             if response.lower() == 'n':
-                print('ok! file remines')
+                print('ok! file remaines')
 
             try:
                 shutil.rmtree(target_path)

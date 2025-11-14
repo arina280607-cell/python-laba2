@@ -50,4 +50,4 @@ def ls(shell, args):
         for item in items:
             print(item.name)
 
-        return True
+    return True
