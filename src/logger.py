@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -19,4 +18,4 @@ def log_command(logger, command, success=True, error_message=""):
     if success:
         logger.info(f"command: {command}")
     else:
-        logger.error(f"in command{command} error {error_message}")
+        logger.error(f"in command{command} error: {error_message}")

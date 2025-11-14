@@ -9,7 +9,7 @@ def mv(shell, args):
     if not source.is_absolute():
         source = shell.current_dir / source
     if not destination.is_absolute():
-        destination = shell.current_dir / destination
+        dest_path = shell.current_dir / destination
     else:
         dest_path = destination
 

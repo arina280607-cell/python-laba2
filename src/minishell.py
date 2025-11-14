@@ -1,4 +1,4 @@
-import os
+
 from pathlib import Path
 from logger import logg, log_command
 
@@ -16,14 +16,14 @@ class Minishell:
         return user_input.strip().split() #разделяет команду на части для обработки
     def show_promt(self):
         current_path = str(self.current_dir).replace("\\", "/")#так как \n, например, питон воспримет как начало новой строки
-        return f"\n{current_path}"
+        return f"{current_path}: "
     def proverka_vipoln(self, command_name:str, arguments):
         if command_name in self.commands:
             command_function = self.commands[command_name]
         elif command_name in self.plugins:
             command_function = self.plugins[command_name]
         else:
-            print(f"unknown command: {command_name}")
+            print(f"unknown command:{command_name}")
             return False
         try:
             result = command_function(self, arguments)
@@ -33,7 +33,7 @@ class Minishell:
             print(f"Error: {e}")
             log_command(self.logger, f"{command_name}{' '.join(arguments)}", success=False, error_message=str(e))
             return False
-    def run(self):
+    def start(self):
         print("Hello! to exit, enter 'exit'")
         print("Enter the command:")
         while True:

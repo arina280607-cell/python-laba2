@@ -32,7 +32,7 @@ def cp(shell, args: list[str]):
                 print(f'Copied file {source} to {dest_path}')
             elif source.is_dir():
                 if recursive:
-                    shutil.copy_tree(source, dest_path)
+                    shutil.copytree(source, dest_path)
                     print(f'Copied dir {source} to {dest_path}')
                 else:
                     raise ValueError('please, use -r')

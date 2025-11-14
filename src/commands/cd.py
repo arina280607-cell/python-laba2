@@ -4,7 +4,7 @@ import os
 #команда cd - смена директории
 def cd(shell, args: list[str]) -> bool:
     if not args:
-        home_dir = Path.home()
+        new_path = Path.home()
     else:
         target = args[0]
 

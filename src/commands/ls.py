@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 import stat
 from datetime import datetime
 
@@ -24,10 +23,10 @@ def ls(shell, args):
     except PermissionError:  # если нет доступа к чтению
         raise PermissionError(f'There is no access to the catalog: {target_path}')
 
-    items.sort(key=lambda item: (item.is_file(), item.name.lower()))
+    items.sort(key=lambda i: (i.is_file(), i.name.lower()))
 
     if detailed:
-        print(f'\nContent of {target_path}:')
+        print(f'Content of {target_path}:')
         print()
         for item in items:
             try:
